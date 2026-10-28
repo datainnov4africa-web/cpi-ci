@@ -1,0 +1,14 @@
+division,label_en,label_fr,weight_pct,items,sources,index_last,change_pct,contribution_last_pp,measured
+01,Food and non-alcoholic beverages,Produits alimentaires et boissons non alcoolisées,31.93,752,1,98.85,-1.1500000000000066,-0.315,True
+02,"Alcoholic beverages, tobacco and narcotics","Boissons alcoolisées, tabac et stupéfiants",0.79,13,1,100.0,0.0,0.0,True
+03,Clothing and footwear,Articles d'habillement et chaussures,3.49,1429,1,94.92,-5.079999999999996,-0.124,True
+04,"Housing, water, electricity, gas and other fuels","Logement, eau, électricité, gaz et autres combustibles",15.5,287,1,99.47,-0.5299999999999971,-0.137,True
+05,"Furnishings, household equipment and maintenance","Meubles, équipements ménagers et entretien courant",3.38,2883,1,98.05,-1.9500000000000073,-0.063,True
+06,Health,Santé,4.7,264,1,99.52,-0.48000000000000265,-0.008,True
+07,Transport,Transports,10.04,187,1,102.28,2.279999999999993,0.048,True
+08,Information and communication,Information et communication,8.76,2305,1,96.59,-3.410000000000002,-0.19,True
+09,"Recreation, sport and culture","Loisirs, sports et culture",2.04,310,1,99.99,-0.010000000000010001,0.0,True
+10,Education services,Services d'enseignement,2.54,22,1,99.28,-0.7199999999999984,-0.016,True
+11,Restaurants and accommodation services,Restaurants et services d'hébergement,13.28,11,1,100.0,0.0,0.0,True
+12,Insurance and financial services,Assurances et services financiers,0.22,7,1,100.0,0.0,0.0,True
+13,"Personal care, social protection and miscellaneous","Soins personnels, protection sociale et divers",3.33,1977,1,94.62,-5.3799999999999955,-0.171,True

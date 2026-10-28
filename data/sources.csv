@@ -1,0 +1,23 @@
+id,name,kind,url,divisions,status,excluded,observations_this_run,items_this_run
+ci_jumia,Jumia Côte d'Ivoire,ecommerce,https://www.jumia.ci,01 03 05 06 08 09 13,verified,False,22645,10447
+ci_glovo,"Glovo Abidjan (supermarkets, restaurants, parapharmacies)",ecommerce,https://glovoapp.com/fr/ci/abidjan-nord/,01 02 11 13,partial,False,0,0
+ci_ocpv,OCPV — weekly consumer prices on markets,market,https://www.economie-ivoirienne.ci/info-prix.html,01,verified,False,0,0
+ci_anare_electricity,ANARE-CI — electricity tariff grid,tariff,https://anare.ci/le-marche/prix-de-lelectricite/,04,verified,False,0,0
+ci_fuel,Maximum retail prices of petroleum products (monthly order),tariff,https://www.koaci.com/article/2026/09/30/cote-divoire/economie/cote-divoire-les-prix-maxima-de-detail-des-produits-petroliers-sont-maintenus-inchanges-pour-la-periode-du-1er-au-31-octobre-2026_201133.html,07 04,verified,False,0,0
+ci_mtn,MTN Côte d'Ivoire — mobile data bundles,tariff,https://www.mtn.ci/deal/offre-internet-mobile/,08,verified,False,0,0
+ci_coinafrique_rent,CoinAfrique Côte d'Ivoire — rental listings,rent,https://ci.coinafrique.com/categorie/appartements,04,partial,False,0,0
+ci_wave,Wave — mobile money fees,tariff,https://www.wave.com/fr/,12,partial,False,0,0
+ci_education_fees,Public higher-education registration fees,tariff,https://erooamba.com/posts/frais-scolarite-universites-ecoles-cote-ivoire-2026-2027,10,partial,False,0,0
+ci_globalpetrol,GlobalPetrolPrices — fuel cross-check,benchmark,https://www.globalpetrolprices.com/Ivory-Coast/gasoline_prices/,07,partial,False,0,0
+ci_worldbank,World Bank — official CPI (annual),benchmark,https://api.worldbank.org/v2/country/CIV/indicator/FP.CPI.TOTL,,verified,False,0,0
+ci_imf,IMF DataMapper — inflation (WEO),benchmark,https://www.imf.org/external/datamapper/api/v1/PCPIPCH/CIV,,verified,False,0,0
+ci_orange_money,Orange Money Côte d'Ivoire — fees,tariff,https://www.orange.ci/fr/tarifs-orange-money.html,12,verified,False,0,0
+ci_school_fees,Official school fees — baccalauréat and secondary registration,tariff,https://servicepublic.gouv.ci/accueil/detaildemarcheparticulier/1/391/142,10,partial,False,0,0
+ci_pharmacie_ivoirienne,Pharmacie Ivoirienne — online pharmacy (over-the-counter medicines),ecommerce,https://pharmacie-ivoirienne.com/produits/upsa-efferalgan/,06,partial,False,0,0
+ci_anstat,ANStat / ins.ci,benchmark,https://www.anstat.ci,,excluded,True,0,0
+ci_wfp_hdx,WFP market prices (HDX),market,https://data.humdata.org/dataset/wfp-food-prices-for-cote-divoire,01,excluded,True,0,0
+ci_sotra,SOTRA bus fares,tariff,https://sotra.ci,07,excluded,True,0,0
+ci_cie,CIE,tariff,https://www.cie.ci,04,excluded,True,0,0
+ci_yango,"Yango (rides, Deli)",ecommerce,https://yango.com,07 11,excluded,True,0,0
+ci_orange_data,Orange Côte d'Ivoire — mobile internet passes,tariff,https://www.orange.ci/fr/internet-en-deplacement.html,08,excluded,True,0,0
+ci_jumia_alcohol,"Jumia — beer, wine and spirits",ecommerce,https://www.jumia.ci/epicerie-biere-vin-spiritueux/,02,excluded,True,0,0

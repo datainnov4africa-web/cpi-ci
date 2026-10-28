@@ -306,7 +306,8 @@ footer a{color:#fff}
 </div></footer>
 
 <script src="data.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js"></script>
+<script src="assets/echarts.min.js"></script>
+<script>window.echarts||document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js"><\/script>')</script>
 <script>
 (function(){
 "use strict";
@@ -494,7 +495,8 @@ function multiples(){
 
 /* ---------------- charts ---------------- */
 const charts={};
-function chart(id){const el=document.getElementById(id);if(!window.echarts||!el)return null;
+function chart(id){const el=document.getElementById(id);if(!el)return null;
+  if(!window.echarts){el.innerHTML=`<p class="small muted" style="padding:24px">${LANG==="fr"?"Le graphique n'a pas pu se charger (bibliothèque echarts introuvable). Rechargez la page.":"The chart could not load (echarts library not found). Reload the page."}</p>`;return null;}
   if(charts[id]){charts[id].dispose();}
   charts[id]=echarts.init(el,null,{renderer:"svg"});return charts[id];}
 function base(){

@@ -1,0 +1,47 @@
+{
+ "iso2": "CI",
+ "iso3": "CIV",
+ "name_en": "Côte d'Ivoire",
+ "name_fr": "Côte d'Ivoire",
+ "currency": "XOF",
+ "symbol": "FCFA",
+ "languages": [
+  "fr"
+ ],
+ "brand": "AfDB – Data Innovation for Africa (DI4A)",
+ "version": "2.0.0",
+ "generated": "2026-10-28T17:40Z",
+ "frequency": "D",
+ "periods": [
+  "2026-10-14",
+  "2026-10-18",
+  "2026-10-21"
+ ],
+ "weights_status": "given",
+ "weights_source": "Ministère de l'Économie, du Plan et du Développement — IHPC base 2023 = 100, COICOP 2018, publication n°321 (août 2026), tableau 1",
+ "weights_url": "",
+ "basket_share": 0.98,
+ "demo": true,
+ "excluded_natures": [
+  "rent_ask"
+ ],
+ "title_en": "Experimental consumer price index",
+ "title_fr": "Indice expérimental des prix à la consommation",
+ "capital": {
+  "name": "Abidjan",
+  "lat": 5.36,
+  "lon": -4.0083
+ },
+ "kpi": {
+  "index": 99.0,
+  "change": -0.98,
+  "cumulative": -1.0,
+  "period": "2026-10-21",
+  "first_period": "2026-10-14",
+  "observations": 22645,
+  "items": 10447,
+  "sources": 1,
+  "divisions": 13,
+  "matched": 5433
+ }
+}

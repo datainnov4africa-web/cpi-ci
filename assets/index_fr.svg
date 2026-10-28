@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360" viewBox="0 0 900 360" font-family="Segoe UI, Helvetica Neue, Helvetica, Arial, sans-serif">
+<rect width="900" height="360" rx="14" fill="#FFFFFF" stroke="#DCE3DE"/>
+<text x="70" y="34" font-size="18" font-weight="700" fill="#1F2A24">Indice d’ensemble<tspan font-weight="400" fill="#5B6B62" font-size="14">  (première période = 100)</tspan></text>
+<line x1="70" x2="870" y1="300.0" y2="300.0" stroke="#EEF2EF"/><text x="60" y="304.0" font-size="12" fill="#5B6B62" text-anchor="end">98,0</text>
+<line x1="70" x2="870" y1="240.0" y2="240.0" stroke="#EEF2EF"/><text x="60" y="244.0" font-size="12" fill="#5B6B62" text-anchor="end">98,6</text>
+<line x1="70" x2="870" y1="180.0" y2="180.0" stroke="#EEF2EF"/><text x="60" y="184.0" font-size="12" fill="#5B6B62" text-anchor="end">99,3</text>
+<line x1="70" x2="870" y1="120.0" y2="120.0" stroke="#EEF2EF"/><text x="60" y="124.0" font-size="12" fill="#5B6B62" text-anchor="end">100,0</text>
+<line x1="70" x2="870" y1="60.0" y2="60.0" stroke="#EEF2EF"/><text x="60" y="64.0" font-size="12" fill="#5B6B62" text-anchor="end">100,7</text>
+<polygon points="70.0,120.0 470.0,95.3 870.0,174.7 870.0,264.7 470.0,154.4 70.0,120.0" fill="#00703C" fill-opacity="0.12"/>
+<polyline points="70.0,120.0 470.0,122.6 870.0,208.2" fill="none" stroke="#0B3D2E" stroke-width="3" stroke-linejoin="round"/>
+<circle cx="70.0" cy="120.0" r="4.5" fill="#FFFFFF" stroke="#0B3D2E" stroke-width="2.5"/>
+<text x="70.0" y="322" font-size="12" fill="#5B6B62" text-anchor="start">2026-10-14</text>
+<circle cx="470.0" cy="122.6" r="4.5" fill="#FFFFFF" stroke="#0B3D2E" stroke-width="2.5"/>
+<text x="470.0" y="322" font-size="12" fill="#5B6B62" text-anchor="middle">2026-10-18</text>
+<circle cx="870.0" cy="208.2" r="4.5" fill="#FFFFFF" stroke="#0B3D2E" stroke-width="2.5"/>
+<text x="870.0" y="322" font-size="12" fill="#5B6B62" text-anchor="end">2026-10-21</text>
+<text x="870.0" y="196.2" font-size="14" font-weight="700" fill="#0B3D2E" text-anchor="end">99,0</text>
+<text x="870" y="348" font-size="11.5" fill="#5B6B62" text-anchor="end">Bande : intervalle bootstrap à 90 % (échantillon des articles)</text>
+</svg>
