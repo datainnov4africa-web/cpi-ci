@@ -1,0 +1,678 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Price Pulse</title>
+<meta name="description" content="Experimental consumer price index built from alternative data — AfDB – Data Innovation for Africa (DI4A).">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B3D2E'/%3E%3Cpath d='M5 22 L12 16 L17 19 L27 8' stroke='%23E2A92B' stroke-width='3.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<style>
+:root{
+  --forest:#0B3D2E; --forest-2:#12503D;
+  --paper:#F6F7F3; --surface:#FFFFFF; --surface-2:#EEF1EC;
+  --ink:#14211B; --ink-2:#4A5A52; --ink-3:#7A877F; --rule:#DCE3DD;
+  --s1:#0A8A5F; --s2:#C98A00; --s3:#3557A8; --s4:#C2456A;
+  --up:#C2456A; --down:#3557A8; --flat:#9AA59E;
+  --good:#0A7A50; --warn:#A86A00; --bad:#B23A3A;
+  --gold:#E2A92B;
+  --hatch:repeating-linear-gradient(135deg,#DCE3DD 0 2px,transparent 2px 7px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    --paper:#0B1411; --surface:#0F1A16; --surface-2:#15241F;
+    --ink:#E8EEEA; --ink-2:#B4C2BA; --ink-3:#86968D; --rule:#22342D;
+    --s1:#1FA874; --s2:#BC8618; --s3:#6A88D6; --s4:#D6638A;
+    --up:#D6638A; --down:#6A88D6; --flat:#5F6E66;
+    --good:#2FBF86; --warn:#E0A82E; --bad:#E77272;
+    --hatch:repeating-linear-gradient(135deg,#22342D 0 2px,transparent 2px 7px);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0B1411; --surface:#0F1A16; --surface-2:#15241F;
+  --ink:#E8EEEA; --ink-2:#B4C2BA; --ink-3:#86968D; --rule:#22342D;
+  --s1:#1FA874; --s2:#BC8618; --s3:#6A88D6; --s4:#D6638A;
+  --up:#D6638A; --down:#6A88D6; --flat:#5F6E66;
+  --good:#2FBF86; --warn:#E0A82E; --bad:#E77272;
+  --hatch:repeating-linear-gradient(135deg,#22342D 0 2px,transparent 2px 7px);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 "Atkinson Hyperlegible",system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+h1,h2,h3,.num{font-family:"Bricolage Grotesque","Arial Narrow","Helvetica Neue",system-ui,sans-serif;font-optical-sizing:auto}
+h2{font-size:clamp(28px,3.4vw,44px);line-height:1.08;font-weight:700;letter-spacing:-.015em;margin:0 0 10px;font-stretch:88%}
+h3{font-size:20px;line-height:1.25;margin:0 0 6px;font-weight:650}
+p{margin:0 0 12px;max-width:68ch}
+a{color:inherit;text-decoration-color:var(--s1);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:4px}
+.num{font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding:0 28px}
+@media (max-width:640px){.wrap{padding:0 16px}}
+.muted{color:var(--ink-2)}
+.small{font-size:14px}
+
+/* ---------- top bar ---------- */
+.bar{position:fixed;top:0;left:0;right:0;z-index:30;transition:background .3s}
+.bar .wrap{display:flex;align-items:center;gap:18px;height:62px}
+.bar.solid{background:color-mix(in srgb,var(--paper) 92%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;color:#fff;text-decoration:none}
+.bar.solid .brand{color:var(--ink)}
+.brand svg{flex:none}
+.nav{display:flex;gap:4px;margin-left:auto;align-items:center}
+.nav a.sec{color:#fff;text-decoration:none;font-size:14px;padding:6px 10px;border-radius:8px;opacity:.88}
+.bar.solid .nav a.sec{color:var(--ink-2)}
+.nav a.sec:hover{opacity:1;background:rgba(255,255,255,.12)}
+.toggle{border:1px solid rgba(255,255,255,.5);background:transparent;color:#fff;border-radius:999px;padding:5px 12px;font:600 13px "Atkinson Hyperlegible";cursor:pointer}
+.bar.solid .toggle{border-color:var(--rule);color:var(--ink)}
+@media (max-width:900px){.nav a.sec{display:none}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;min-height:92vh;display:flex;align-items:flex-end;color:#fff;overflow:hidden;background:var(--forest)}
+.hero .photo{position:absolute;inset:0;background-size:cover;background-position:center;filter:grayscale(.35) contrast(1.05);
+  transform:scale(1.06);opacity:0;transition:opacity 1.4s ease, transform 8s ease-out}
+.hero .photo.on{opacity:1;transform:scale(1)}
+.hero::after{content:"";position:absolute;inset:0;background:
+  linear-gradient(180deg,rgba(11,61,46,.55) 0%,rgba(11,61,46,.15) 35%,rgba(7,30,23,.92) 100%),
+  linear-gradient(90deg,rgba(7,30,23,.75),rgba(7,30,23,0) 70%);}
+.hero .inner{position:relative;z-index:2;width:100%;padding:120px 0 34px}
+.hero .place{font-size:16px;opacity:.85;margin-bottom:6px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.hero .place .flagdot{width:9px;height:9px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 0 rgba(226,169,43,.7);animation:pulse 2.4s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(226,169,43,.6)}80%{box-shadow:0 0 0 14px rgba(226,169,43,0)}100%{box-shadow:0 0 0 0 rgba(226,169,43,0)}}
+.hero h1{font-size:clamp(34px,4.6vw,64px);line-height:1.02;margin:0 0 22px;font-weight:700;letter-spacing:-.02em;max-width:16ch;font-stretch:82%}
+.hero .big{display:flex;align-items:flex-end;gap:28px;flex-wrap:wrap}
+.hero .value{font-family:"Bricolage Grotesque","Arial Narrow",system-ui,sans-serif;font-size:clamp(96px,17vw,232px);line-height:.8;font-weight:800;letter-spacing:-.045em;font-stretch:76%}
+.hero .side{padding-bottom:14px;max-width:420px}
+.hero .chg{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:clamp(26px,3vw,40px);font-weight:700}
+.hero .side p{color:rgba(255,255,255,.86);font-size:16px;margin:4px 0 0}
+.ribbon{position:absolute;left:0;right:0;bottom:0;height:34%;z-index:1;pointer-events:none}
+.ribbon path.line{fill:none;stroke:var(--gold);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:draw 2.6s .4s cubic-bezier(.6,.05,.25,1) forwards}
+.ribbon path.area{fill:url(#rg);opacity:0;animation:fadein 1.2s 2.3s forwards}
+.ribbon circle{fill:var(--gold);opacity:0;animation:fadein .4s 2.9s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes fadein{to{opacity:1}}
+.facts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;margin-top:30px;border-top:1px solid rgba(255,255,255,.25)}
+.facts div{padding:14px 18px 4px 0}
+.facts .num{font-size:30px;font-weight:700;display:block;line-height:1.1}
+.facts span.l{font-size:14px;opacity:.82}
+@media (max-width:760px){.facts{grid-template-columns:repeat(2,minmax(0,1fr))}.hero .big{gap:10px}}
+.credit{position:absolute;right:14px;bottom:8px;z-index:3;font-size:11px;color:rgba(255,255,255,.7)}
+.credit a{color:inherit}
+
+/* ---------- ticker ---------- */
+.ticker{background:var(--forest);color:#E9F1EC;overflow:hidden;white-space:nowrap;border-top:1px solid rgba(255,255,255,.08)}
+.ticker .track{display:inline-flex;gap:38px;padding:11px 0;animation:tick 90s linear infinite}
+.ticker:hover .track{animation-play-state:paused}
+.ticker .it{font-size:14px}
+.ticker .it b{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:600;margin-left:6px}
+.ticker .up{color:#F29AB6}.ticker .down{color:#9DB5F2}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------- sections ---------- */
+section.s{padding:84px 0 20px}
+.lead{font-size:19px;color:var(--ink-2);max-width:62ch;margin-bottom:28px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:40px;align-items:start}
+@media (max-width:980px){.grid2{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:14px;padding:18px 18px 8px}
+.chart{width:100%;height:420px}
+.chart.sm{height:300px}
+.note{font-size:14px;color:var(--ink-2);border-left:3px solid var(--s2);padding:4px 0 4px 12px;margin:14px 0}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:14px;color:var(--ink-2);margin:4px 0 8px}
+.legend i{display:inline-block;width:14px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* small multiples */
+.multiples{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:14px;overflow:hidden}
+.tile{background:var(--surface);padding:14px 14px 10px;cursor:pointer;text-align:left;border:0;font:inherit;color:inherit;position:relative}
+.tile:hover{background:var(--surface-2)}
+.tile[aria-pressed="true"]{background:var(--surface-2);box-shadow:inset 0 -3px 0 var(--s1)}
+.tile .code{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:700;font-size:14px;color:var(--ink-3)}
+.tile .lab{font-size:14px;line-height:1.25;min-height:2.5em;margin:2px 0 6px}
+.tile .v{font-family:"Bricolage Grotesque",system-ui,sans-serif;font-size:26px;font-weight:700;line-height:1}
+.tile .d{font-size:13px;margin-left:6px}
+.tile svg{display:block;width:100%;height:38px;margin-top:6px}
+.tile.empty{background-image:var(--hatch);cursor:default}
+.tile.thin{background-image:var(--hatch)}
+.tile.thin .v{font-size:15px;color:var(--ink-3);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-weight:400}
+.tile.empty .v{font-size:15px;color:var(--ink-3);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;font-weight:400}
+
+/* buttons */
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin:0 0 12px}
+.seg button{border:0;background:transparent;color:var(--ink-2);font:600 14px "Atkinson Hyperlegible";padding:7px 12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--forest);color:#fff}
+
+/* explorer */
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.tools input,.tools select{font:15px "Atkinson Hyperlegible";padding:9px 12px;border-radius:10px;border:1px solid var(--rule);background:var(--surface);color:var(--ink);min-width:0}
+.tools input{flex:1 1 260px}
+table.t{width:100%;border-collapse:collapse;font-size:15px}
+table.t th{text-align:left;font-weight:700;color:var(--ink-2);font-size:13px;padding:8px 10px;border-bottom:1px solid var(--rule);cursor:pointer;white-space:nowrap}
+table.t td{padding:8px 10px;border-bottom:1px solid var(--rule);vertical-align:middle}
+table.t td.r,table.t th.r{text-align:right}
+table.t tr:hover td{background:var(--surface-2)}
+.tbl{overflow:auto;max-height:560px;border:1px solid var(--rule);border-radius:14px;background:var(--surface)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:2px 9px;border-radius:999px;border:1px solid var(--rule);white-space:nowrap}
+.pill.good{color:var(--good);border-color:currentColor}.pill.warn{color:var(--warn);border-color:currentColor}.pill.bad{color:var(--bad);border-color:currentColor}
+.chg.up,.d.up{color:var(--up)}.chg.down,.d.down{color:var(--down)}
+
+/* sources */
+.srcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:16px}
+.src{border-top:3px solid var(--s1);background:var(--surface);padding:14px 16px;border-radius:0 0 12px 12px}
+.src.ex{border-top-color:var(--flat);background:transparent;border:1px dashed var(--rule);border-top:3px solid var(--flat)}
+.src .k{font-size:13px;color:var(--ink-3)}
+.src p{font-size:14.5px;color:var(--ink-2);margin:6px 0 0}
+
+/* method */
+.formula{font-family:"Bricolage Grotesque",Georgia,serif;font-size:22px;background:var(--surface-2);border-radius:12px;padding:16px 18px;margin:10px 0 14px;overflow-x:auto}
+.steps{counter-reset:s;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:22px;margin-top:10px}
+.steps div{counter-increment:s;border-top:2px solid var(--ink);padding-top:12px}
+.steps div::before{content:counter(s);font-family:"Bricolage Grotesque",system-ui,sans-serif;font-weight:800;font-size:34px;color:var(--s1);display:block;line-height:1}
+footer{margin-top:90px;background:var(--forest);color:#DCE8E1;padding:40px 0 50px;font-size:14px}
+footer a{color:#fff}
+.demo-banner{display:inline-block;background:var(--gold);color:#1b1300;font-size:14px;line-height:1.4;padding:6px 12px;border-radius:8px;font-weight:700;margin:0 0 18px;max-width:72ch}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (prefers-reduced-motion: reduce){
+  *{animation:none!important;transition:none!important}
+  .ribbon path.line{stroke-dashoffset:0}.ribbon path.area,.ribbon circle{opacity:1}
+  .hero .photo{opacity:1;transform:none}
+}
+</style>
+</head>
+<body>
+<header class="bar" id="bar">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="Top">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#E2A92B"/><path d="M5 22 L12 16 L17 19 L27 8" stroke="#0B3D2E" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span data-i="brand">AfDB – Data Innovation for Africa (DI4A)</span>
+    </a>
+    <nav class="nav" aria-label="Sections">
+      <a class="sec" href="#divisions" data-i="nav_div">Divisions</a>
+      <a class="sec" href="#why" data-i="nav_why">Why it moved</a>
+      <a class="sec" href="#basket" data-i="nav_basket">Basket</a>
+      <a class="sec" href="#explorer" data-i="nav_prices">Prices</a>
+      <a class="sec" href="#method" data-i="nav_method">Method</a>
+      <a class="sec" href="#sources" data-i="nav_sources">Sources</a>
+      <button class="toggle" id="lang" aria-label="Langue / language">FR</button>
+      <button class="toggle" id="theme" aria-label="Light or dark theme"><svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" style="vertical-align:-2px"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"/></svg></button>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<section class="hero" aria-labelledby="h1">
+  <div class="photo" id="photo" role="img" aria-label=""></div>
+  <svg class="ribbon" id="ribbon" viewBox="0 0 1000 300" preserveAspectRatio="none" aria-hidden="true"></svg>
+  <div class="inner"><div class="wrap">
+    <p id="demo" class="demo-banner" hidden></p>
+    <div class="place"><span class="flagdot"></span><span id="place"></span></div>
+    <h1 id="h1"></h1>
+    <div class="big">
+      <div class="value num" id="kIndex">100.0</div>
+      <div class="side">
+        <div class="chg num" id="kChange"></div>
+        <p id="kSince"></p>
+      </div>
+    </div>
+    <div class="facts" id="facts"></div>
+  </div></div>
+  <div class="credit" id="heroCredit"></div>
+</section>
+<div class="ticker" aria-hidden="true"><div class="track" id="ticker"></div></div>
+
+<section class="s" id="divisions"><div class="wrap">
+  <h2 data-i="div_h">Thirteen divisions, one basket</h2>
+  <p class="lead" data-i="div_lead">Each tile is a COICOP 2018 division. Select one to follow it against all items. Hatched tiles have no source yet: the index says so rather than guessing.</p>
+  <div class="multiples" id="multiples"></div>
+  <div class="panel" style="margin-top:24px">
+    <div class="legend" id="mainLegend"></div>
+    <div class="chart" id="mainChart" role="img" aria-label="Index chart"></div>
+  </div>
+</div></section>
+
+<section class="s" id="why"><div class="wrap">
+  <h2 data-i="why_h">Why it moved</h2>
+  <p class="lead" data-i="why_lead">Each bar is a division's contribution to the change, in percentage points. The bars add up exactly to the change of the all-items index.</p>
+  <div class="seg" id="periodSeg" role="group"></div>
+  <div class="grid2">
+    <div class="panel"><div class="chart" id="contribChart" role="img"></div></div>
+    <div>
+      <h3 data-i="shape_h">The shape of a change</h3>
+      <p class="muted" data-i="shape_p">How individual prices moved between the last two collections. A general rise moves the whole distribution; a promotion leaves most prices still and pulls a few far down.</p>
+      <div class="panel"><div class="chart sm" id="histChart" role="img"></div></div>
+      <p class="note" id="shapeNote"></p>
+    </div>
+  </div>
+</div></section>
+
+<section class="s" id="basket"><div class="wrap">
+  <h2 data-i="basket_h">What the basket covers</h2>
+  <p class="lead" id="basketLead"></p>
+  <div class="grid2">
+    <div class="panel"><div class="chart" id="treeChart" role="img"></div></div>
+    <div>
+      <h3 data-i="map_h">Where the prices come from</h3>
+      <div class="panel"><div class="chart sm" id="mapChart" role="img"></div></div>
+      <p class="small muted" id="mapNote"></p>
+    </div>
+  </div>
+</div></section>
+
+<section class="s" id="explorer"><div class="wrap">
+  <h2 data-i="exp_h">Look up a price</h2>
+  <p class="lead" data-i="exp_lead">A sample of the items followed in every period: the largest movers of each division, and some of the steadiest. Click a column to sort.</p>
+  <div class="tools">
+    <input id="q" type="search" placeholder="Search" aria-label="Search">
+    <select id="fdiv" aria-label="Division"></select>
+  </div>
+  <div class="tbl"><table class="t" id="ptable"><thead></thead><tbody></tbody></table></div>
+  <p class="small muted" id="expCount"></p>
+</div></section>
+
+<section class="s" id="method"><div class="wrap">
+  <h2 data-i="m_h">How it is measured</h2>
+  <p class="lead" data-i="m_lead">The computation follows the Consumer Price Index Manual (2020). Same items from one period to the next, so that a price change is never confused with a change of product.</p>
+  <div class="steps" id="steps"></div>
+  <div class="grid2" style="margin-top:40px">
+    <div class="panel">
+      <div class="legend" id="methLegend"></div>
+      <div class="chart" id="methChart" role="img"></div>
+    </div>
+    <div>
+      <h3 data-i="jev_h">Why the Jevons formula</h3>
+      <div class="formula">P<sub>J</sub> = ∏ (p<sub>i</sub><sup>t</sup> / p<sub>i</sub><sup>t−1</sup>)<sup>1/n</sup></div>
+      <p class="muted" data-i="jev_p">The geometric mean of price relatives. It treats a doubling and a halving symmetrically. The Carli, an arithmetic mean, does not: when prices bounce, it drifts upwards with nothing having changed.</p>
+      <h3 style="margin-top:22px" data-i="off_h">Against the official figures</h3>
+      <div id="official"></div>
+    </div>
+  </div>
+</div></section>
+
+<section class="s" id="sources"><div class="wrap">
+  <h2 data-i="src_h">The sources</h2>
+  <p class="lead" data-i="src_lead">Every source the register knows for this country, with what this run obtained from it. Excluded sources keep their reason: a refusal is the publisher's decision, it is recorded and never circumvented.</p>
+  <div class="srcs" id="srcs"></div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <p><b>AfDB – Data Innovation for Africa (DI4A)</b></p>
+  <p id="footNote"></p>
+  <p id="photoCredits" class="small"></p>
+</div></footer>
+
+<script src="data.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.5.1/echarts.min.js"></script>
+<script>
+(function(){
+"use strict";
+const D = window.CPI_DATA;
+if(!D){document.body.innerHTML="<p style='padding:40px'>data.js is missing next to index.html.</p>";return;}
+const M = D.meta;
+let LANG = localGet("lang") || ((M.languages||[]).includes("fr") ? "fr" : "en");
+
+const T = {
+ en:{brand:"AfDB – Data Innovation for Africa (DI4A)",nav_div:"Divisions",nav_why:"Why it moved",nav_basket:"Basket",nav_prices:"Prices",nav_method:"Method",nav_sources:"Sources",
+  div_h:"Thirteen divisions, one basket",div_lead:"Each tile is a COICOP 2018 division. Select one to follow it against all items. Hatched tiles have no source yet: the index says so rather than guessing.",
+  why_h:"Why it moved",why_lead:"Each bar is a division's contribution to the change, in percentage points. The bars add up exactly to the change of the all-items index.",
+  shape_h:"The shape of a change",shape_p:"How individual prices moved between the last two collections. A general rise moves the whole distribution; a promotion leaves most prices still and pulls a few far down.",
+  basket_h:"What the basket covers",map_h:"Where the prices come from",exp_h:"Look up a price",
+  exp_lead:"A sample of the items followed in every period: the largest movers of each division, and some of the steadiest. Click a column to sort.",
+  m_h:"How it is measured",m_lead:"The computation follows the Consumer Price Index Manual (2020). Same items from one period to the next, so that a price change is never confused with a change of product.",
+  jev_h:"Why the Jevons formula",jev_p:"The geometric mean of price relatives. It treats a doubling and a halving symmetrically. The Carli, an arithmetic mean, does not: when prices bounce, it drifts upwards with nothing having changed.",
+  off_h:"Against the official figures",src_h:"The sources",src_lead:"Every source the register knows for this country, with what this run obtained from it. Excluded sources keep their reason: a refusal is the publisher's decision, it is recorded and never circumvented.",
+  all:"All items",items:"items followed",obs:"price observations",srcs:"sources",divs:"divisions out of 13",
+  since:(a,b)=>`Change since ${a}, base 100. Latest collection: ${b}.`,change_last:"over the last period",
+  noSource:"No source yet",thin:n=>`${n} items, too few matched in each period to measure a change`,src1:"source",search:"Search an item",alldiv:"All divisions",
+  th:["Item","Division","Source","First","Latest","Change"],shown:(n,t)=>`${n} of ${t} items shown.`,
+  basketLead:(c,s)=>`Tile area is the division's official weight in household spending. Coloured: divisions this index reaches (${c} of 13). Hatched: divisions still out of reach.`+(s!=null?` The COICOP groups where at least one item is followed weigh ${s}% of the official basket — reached is not yet represented.`:""),
+  basketEqual:"No official weights were supplied for this country: tiles have equal areas and the index weighs divisions equally. It is then a trend indicator, not a measure comparable to the national CPI.",
+  shapeNote:(n,d,u,s,a,b)=>`${n.toLocaleString()} items matched between ${a} and ${b}: ${d}% fell, ${u}% rose, ${s}% did not move.`,
+  promoHint:"Most prices still, a minority sharply down: the signature of a promotion campaign, not of general inflation.",
+  steps:[["Collect","Each source is read politely: robots.txt first, a pause between requests, an identified robot. A refusal is recorded, never circumvented."],
+         ["Classify","Every item gets a COICOP 2018 code: by rules, a language model, or both. The method is chosen on measured accuracy."],
+         ["Match","An item's price is compared with its own price in the previous period. A missing price is imputed at the change of its outlet, two periods at most; a relaunched product is linked and adjusted for its pack size."],
+         ["Aggregate","Jevons indices by outlet and class are combined with the official weights into one all-items index. Variants of method and a bootstrap interval show how much the result depends on the choices."]],
+  formulas:{jevons:"Jevons",dutot:"Dutot",carli:"Carli",geks_jevons:"GEKS-Jevons (unweighted)",geks_tornqvist_proxy:"GEKS-Törnqvist (proxy)",regular_prices:"Struck-through prices (sales excluded)",ci_low:"90 % interval, low",ci_high:"90 % interval, high"},
+  weight:"Official weight",covered:"Covered",notcovered:"Not covered yet",
+  status:{verified:"Verified",partial:"Partial",unverified:"Unverified",excluded:"Excluded"},
+  run:{ok:"Collected",partial:"Collected, check",empty:"Nothing returned",refused:"Refused by the site",error:"Failed",skipped:"Skipped"},
+  kinds:{ecommerce:"Online shop",market:"Market prices",tariff:"Administered price",rent:"Rents",api:"Open data",listing:"Classifieds",benchmark:"Official benchmark"},
+  obsN:n=>`${n.toLocaleString()} observations`,
+  imfLab:"Inflation, IMF World Economic Outlook (%)",offLab:"Official consumer price index, monthly (the experimental index will be compared month by month from two months of collections).",latestOff:"Latest official release",
+  footNote:"Experimental statistics built from alternative data. Not an official index: it complements, and never replaces, the national CPI.",
+  photos:"Photographs",demo:"Demonstration — the figures below come from a single month of collections: they illustrate the method, they are not a published statistic.",
+  map_note:(n)=>`Gold: capital. Green: main cities. ${n?"Listings located in "+n+" districts.":""}`, period:"Period"},
+ fr:{brand:"AfDB – Data Innovation for Africa (DI4A)",nav_div:"Divisions",nav_why:"Pourquoi ça bouge",nav_basket:"Panier",nav_prices:"Prix",nav_method:"Méthode",nav_sources:"Sources",
+  div_h:"Treize divisions, un panier",div_lead:"Chaque tuile est une division COICOP 2018. Sélectionnez-en une pour la suivre face à l'ensemble. Les tuiles hachurées n'ont pas encore de source : l'indice le dit plutôt que de deviner.",
+  why_h:"Pourquoi ça bouge",why_lead:"Chaque barre est la contribution d'une division à la variation, en points de pourcentage. Les barres s'additionnent exactement à la variation de l'indice d'ensemble.",
+  shape_h:"La forme d'une variation",shape_p:"Comment les prix ont bougé un par un entre les deux dernières collectes. Une hausse générale déplace toute la distribution ; une promotion laisse la plupart des prix immobiles et en tire quelques-uns très bas.",
+  basket_h:"Ce que couvre le panier",map_h:"D'où viennent les prix",exp_h:"Chercher un prix",
+  exp_lead:"Un échantillon des articles suivis à chaque période : les plus fortes variations de chaque division, et quelques-uns des plus stables. Cliquez une colonne pour trier.",
+  m_h:"Comment c'est mesuré",m_lead:"Le calcul suit le Manuel de l'indice des prix à la consommation (2020). Les mêmes articles d'une période à l'autre, pour qu'une variation de prix ne soit jamais confondue avec un changement de produit.",
+  jev_h:"Pourquoi la formule de Jevons",jev_p:"La moyenne géométrique des rapports de prix. Elle traite un doublement et une division par deux de façon symétrique. Le Carli, moyenne arithmétique, non : quand les prix oscillent, il dérive vers le haut sans que rien n'ait changé.",
+  off_h:"Face aux chiffres officiels",src_h:"Les sources",src_lead:"Toutes les sources que le registre connaît pour ce pays, avec ce que cette exécution en a obtenu. Les sources exclues gardent leur motif : un refus est une décision de l'éditeur, il est consigné et jamais contourné.",
+  all:"Ensemble",items:"articles suivis",obs:"relevés de prix",srcs:"sources",divs:"divisions sur 13",
+  since:(a,b)=>`Variation depuis le ${a}, base 100. Dernière collecte : ${b}.`,change_last:"sur la dernière période",
+  noSource:"Pas encore de source",thin:n=>`${n} articles, trop peu appariés d'une période à l'autre pour mesurer une variation`,src1:"source",search:"Chercher un article",alldiv:"Toutes les divisions",
+  th:["Article","Division","Source","Premier","Dernier","Variation"],shown:(n,t)=>`${n} articles affichés sur ${t}.`,
+  basketLead:(c,s)=>`La surface d'une tuile est le poids officiel de la division dans la dépense des ménages. En couleur : les divisions que l'indice atteint (${c} sur 13). Hachurées : celles encore hors d'atteinte.`+(s!=null?` Les groupes COICOP où au moins un article est suivi pèsent ${s} % du panier officiel — atteint ne veut pas encore dire représenté.`:""),
+  basketEqual:"Aucune pondération officielle n'a été fournie pour ce pays : les tuiles ont la même surface et l'indice pondère les divisions également. C'est alors un indicateur de tendance, pas une mesure comparable à l'IPC national.",
+  shapeNote:(n,d,u,s,a,b)=>`${n.toLocaleString("fr-FR")} articles appariés entre le ${a} et le ${b} : ${d} % ont baissé, ${u} % ont augmenté, ${s} % n'ont pas bougé.`,
+  promoHint:"La plupart des prix immobiles, une minorité en forte baisse : la signature d'une campagne de promotion, pas d'une inflation générale.",
+  steps:[["Collecter","Chaque source est lue poliment : robots.txt d'abord, une pause entre les requêtes, un robot identifié. Un refus est consigné, jamais contourné."],
+         ["Classer","Chaque article reçoit un code COICOP 2018 : par règles, par modèle de langage, ou les deux. La méthode est choisie sur sa justesse mesurée."],
+         ["Apparier","Le prix d'un article est comparé à son propre prix de la période précédente. Un prix manquant est imputé à la variation de son point de vente, deux périodes au plus ; un produit relancé est raccordé et ajusté de son format."],
+         ["Agréger","Les indices de Jevons par point de vente et par classe sont combinés avec les poids officiels en un indice d'ensemble. Des variantes de méthode et un intervalle bootstrap montrent combien le résultat dépend des choix."]],
+  formulas:{jevons:"Jevons",dutot:"Dutot",carli:"Carli",geks_jevons:"GEKS-Jevons (non pondéré)",geks_tornqvist_proxy:"GEKS-Törnqvist (approché)",regular_prices:"Prix barrés (hors promotions)",ci_low:"Intervalle à 90 %, bas",ci_high:"Intervalle à 90 %, haut"},
+  weight:"Poids officiel",covered:"Couverte",notcovered:"Pas encore couverte",
+  status:{verified:"Vérifiée",partial:"Partielle",unverified:"Non vérifiée",excluded:"Exclue"},
+  run:{ok:"Collectée",partial:"Collectée, à vérifier",empty:"Rien reçu",refused:"Refusée par le site",error:"Échec",skipped:"Ignorée"},
+  kinds:{ecommerce:"Boutique en ligne",market:"Prix de marché",tariff:"Prix administré",rent:"Loyers",api:"Données ouvertes",listing:"Petites annonces",benchmark:"Référence officielle"},
+  obsN:n=>`${n.toLocaleString("fr-FR")} relevés`,
+  imfLab:"Inflation, Perspectives de l'économie mondiale du FMI (%)",offLab:"Indice officiel des prix à la consommation, mensuel (l'indice expérimental lui sera comparé mois par mois dès deux mois de collectes).",latestOff:"Dernière publication officielle",
+  footNote:"Statistique expérimentale construite sur des données alternatives. Ce n'est pas un indice officiel : il complète l'IPC national, il ne le remplace jamais.",
+  photos:"Photographies",demo:"Démonstration — les chiffres ci-dessous viennent d'un seul mois de collectes : ils illustrent la méthode, ce n'est pas une statistique publiée.",
+  map_note:(n)=>`Or : capitale. Vert : grandes villes. ${n?"Annonces localisées dans "+n+" quartiers.":""}`, period:"Période"}
+};
+function t(k){return T[LANG][k];}
+function localGet(k){try{return localStorage.getItem("cpi_"+k)}catch(e){return null}}
+function localSet(k,v){try{localStorage.setItem("cpi_"+k,v)}catch(e){}}
+function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
+function fmt(x,d=1){if(x==null||isNaN(x))return "—";return Number(x).toLocaleString(LANG==="fr"?"fr-FR":"en-GB",{minimumFractionDigits:d,maximumFractionDigits:d});}
+function sgn(x,d=2){if(x==null||isNaN(x))return "—";return (x>0?"+":x<0?"−":"±")+fmt(Math.abs(x),d);}
+function dlab(code){const b=D.basket.find(x=>x.division===code);return b?(LANG==="fr"?b.label_fr:b.label_en):code;}
+function per(p){if(!p)return "";if(/^\d{4}-\d{2}$/.test(p)){const d=new Date(+p.slice(0,4),+p.slice(5,7)-1,1);return d.toLocaleDateString(LANG==="fr"?"fr-FR":"en-GB",{month:"short",year:"numeric"});}
+  const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(p);const d=m?new Date(+m[1],+m[2]-1,+m[3]):new Date(p);return isNaN(d)?p:d.toLocaleDateString(LANG==="fr"?"fr-FR":"en-GB",{day:"numeric",month:"short",year:"numeric"});}
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------------- theme & language ---------------- */
+const root=document.documentElement;
+const savedTheme=localGet("theme"); if(savedTheme) root.setAttribute("data-theme",savedTheme);
+document.getElementById("theme").onclick=()=>{
+  const dark = root.getAttribute("data-theme")==="dark" || (!root.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches);
+  root.setAttribute("data-theme",dark?"light":"dark"); localSet("theme",dark?"light":"dark"); renderCharts();};
+document.getElementById("lang").onclick=()=>{LANG=LANG==="en"?"fr":"en";localSet("lang",LANG);renderAll();};
+const bar=document.getElementById("bar");
+addEventListener("scroll",()=>bar.classList.toggle("solid",scrollY>window.innerHeight*0.6),{passive:true});
+
+/* ---------------- hero ---------------- */
+function hero(){
+  const k=D.kpi;
+  document.getElementById("place").textContent=(LANG==="fr"?M.name_fr:M.name_en)+" — "+M.currency;
+  document.getElementById("h1").textContent=LANG==="fr"?M.title_fr:M.title_en;
+  const el=document.getElementById("kIndex");
+  countTo(el,k.index,1);
+  const c=document.getElementById("kChange");
+  c.textContent=sgn(k.cumulative,1)+" %";
+  c.className="chg num "+(k.cumulative>0?"up":k.cumulative<0?"down":"");
+  c.style.color="#fff";
+  document.getElementById("kSince").textContent=t("since")(per(k.first_period),per(k.period));
+  const facts=[[k.items,t("items")],[k.observations,t("obs")],[k.sources,k.sources===1?t("src1"):t("srcs")],[k.divisions,t("divs")]];
+  document.getElementById("facts").innerHTML=facts.map(f=>`<div><span class="num">${Number(f[0]).toLocaleString(LANG==="fr"?"fr-FR":"en-GB")}</span><span class="l">${f[1]}</span></div>`).join("");
+  ribbon();
+  document.documentElement.lang=LANG;
+  document.getElementById("lang").textContent=LANG==="en"?"FR":"EN";
+  const demo=document.getElementById("demo"); if(M.demo){demo.hidden=false;demo.textContent=t("demo");}
+}
+let counted=false;
+function countTo(el,target,dec){
+  if(counted||matchMedia("(prefers-reduced-motion: reduce)").matches){el.textContent=fmt(target,dec);return;}
+  counted=true;const t0=performance.now(),from=100,dur=2600;
+  (function step(now){const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);el.textContent=fmt(from+(target-from)*e,dec);if(p<1)requestAnimationFrame(step);})(t0);
+}
+function ribbon(){
+  const v=D.all.filter(x=>x!=null); if(v.length<2)return;
+  const lo=Math.min(...v),hi=Math.max(...v),pad=(hi-lo)*0.35||1;
+  const x=i=>i/(v.length-1)*1000, y=val=>40+(1-(val-(lo-pad))/((hi+pad)-(lo-pad)))*220;
+  let d="";v.forEach((val,i)=>{d+=(i?" L":"M")+x(i).toFixed(1)+" "+y(val).toFixed(1);});
+  const svg=document.getElementById("ribbon");
+  svg.innerHTML=`<defs><linearGradient id="rg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#E2A92B" stop-opacity=".28"/><stop offset="1" stop-color="#E2A92B" stop-opacity="0"/></linearGradient></defs>
+   <path class="area" d="${d} L1000 300 L0 300 Z"/><path class="line" d="${d}" vector-effect="non-scaling-stroke"/>`;
+  const p=svg.querySelector("path.line"); const len=p.getTotalLength?p.getTotalLength():1500; p.style.setProperty("--len",len*1.2);
+}
+
+/* ---------------- photographs ---------------- */
+let IMAGES=D.images||[];
+function setPhoto(){
+  const ph=document.getElementById("photo"), cr=document.getElementById("heroCredit");
+  if(!IMAGES.length){ph.style.background="radial-gradient(1200px 600px at 70% 20%, #12503D, #0B3D2E)";ph.classList.add("on");return;}
+  const im=IMAGES[0]; const img=new Image();
+  img.onload=()=>{ph.style.backgroundImage=`url("${im.url}")`;ph.classList.add("on");};
+  img.src=im.url; ph.setAttribute("aria-label",im.title||"");
+  cr.innerHTML=`<a href="${esc(im.page)}" target="_blank" rel="noopener">${esc((im.title||"").replace(/^File:/,"").replace(/\.\w+$/,""))}</a> — ${esc(im.author)}, <a href="${esc(im.license_url||im.page)}" target="_blank" rel="noopener">${esc(im.license)}</a>`;
+  document.getElementById("photoCredits").innerHTML=t("photos")+": "+IMAGES.map(i=>`<a href="${esc(i.page)}" target="_blank" rel="noopener">${esc((i.title||"").replace(/^File:/,""))}</a> (${esc(i.author)}, ${esc(i.license)})`).join(" ; ");
+}
+async function fetchImages(){
+  // Free-licence photographs, asked of Wikimedia Commons from the browser when the build could not.
+  const ok=/^(cc0|cc[ -]by|public domain|pd)/i;
+  for(const q of D.image_queries||[]){
+    try{
+      const u="https://commons.wikimedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrnamespace=6&gsrlimit=8&prop=imageinfo&iiprop=url|extmetadata|size&iiurlwidth=1800&gsrsearch="+encodeURIComponent(q+" filetype:bitmap");
+      const r=await fetch(u); const j=await r.json(); const pages=Object.values((j.query||{}).pages||{}).sort((a,b)=>(a.index||0)-(b.index||0));
+      for(const p of pages){const ii=(p.imageinfo||[])[0]||{},m=ii.extmetadata||{};const lic=((m.LicenseShortName||{}).value||"").trim();
+        if(!ok.test(lic)||ii.width<1200||ii.width<ii.height)continue;
+        IMAGES.push({title:p.title,url:ii.thumburl||ii.url,page:ii.descriptionurl,author:((m.Artist||{}).value||"").replace(/<[^>]+>/g,"").trim()||"Unknown",license:lic,license_url:(m.LicenseUrl||{}).value||""});break;}
+      if(IMAGES.length>=3)break;
+    }catch(e){}
+  }
+  setPhoto();
+}
+
+/* ---------------- ticker ---------------- */
+function ticker(){
+  const items=(D.products||[]).filter(p=>p.change!=null&&Math.abs(p.change)>0.4).slice(0,60);
+  const html=items.map(p=>{const last=p.prices[p.prices.length-1];return `<span class="it">${esc(p.name.slice(0,48))}<b>${fmt(last,last<100?2:0)} ${esc(M.symbol)}</b> <span class="${p.change>0?"up":"down"}">${sgn(p.change,1)} %</span></span>`;}).join("");
+  document.getElementById("ticker").innerHTML=html+html;
+}
+
+/* ---------------- divisions ---------------- */
+let SELECTED=null;
+function spark(vals,w=176,h=38){
+  const v=vals.filter(x=>x!=null); if(v.length<2)return "";
+  const lo=Math.min(...v,100),hi=Math.max(...v,100),r=(hi-lo)||1;
+  const x=i=>i/(vals.length-1)*(w-8)+4,y=val=>4+(1-(val-lo)/r)*(h-8);
+  let d="";vals.forEach((val,i)=>{if(val==null)return;d+=(d?" L":"M")+x(i).toFixed(1)+" "+y(val).toFixed(1);});
+  const last=v[v.length-1],col=last>100.05?css("--up"):last<99.95?css("--down"):css("--flat");
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><line x1="0" x2="${w}" y1="${y(100)}" y2="${y(100)}" stroke="${css("--rule")}" stroke-dasharray="3 3"/><path d="${d}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/></svg>`;
+}
+function multiples(){
+  const box=document.getElementById("multiples");
+  box.innerHTML=D.basket.map(b=>{
+    const s=D.divisions[b.division];
+    if(!s) return `<div class="tile empty" role="note"><div class="code">${b.division}</div><div class="lab">${esc(LANG==="fr"?b.label_fr:b.label_en)}</div><div class="v">${t("noSource")}</div></div>`;
+    if(!(D.measured||[]).includes(b.division)) return `<div class="tile thin" role="note"><div class="code">${b.division}</div><div class="lab">${esc(LANG==="fr"?b.label_fr:b.label_en)}</div><div class="v">${t("thin")(b.items)}</div></div>`;
+    const last=s[s.length-1],ch=last-100;
+    return `<button class="tile" data-d="${b.division}" aria-pressed="${SELECTED===b.division}"><div class="code">${b.division}</div><div class="lab">${esc(LANG==="fr"?b.label_fr:b.label_en)}</div><div><span class="v num">${fmt(last,1)}</span><span class="d ${ch>0.05?"up":ch<-0.05?"down":""}">${sgn(ch,1)}</span></div>${spark(s)}</button>`;
+  }).join("");
+  box.querySelectorAll("button.tile").forEach(b=>b.onclick=()=>{SELECTED=SELECTED===b.dataset.d?null:b.dataset.d;multiples();mainChart();});
+}
+
+/* ---------------- charts ---------------- */
+const charts={};
+function chart(id){const el=document.getElementById(id);if(!window.echarts||!el)return null;
+  if(charts[id]){charts[id].dispose();}
+  charts[id]=echarts.init(el,null,{renderer:"svg"});return charts[id];}
+function base(){
+  return {textStyle:{fontFamily:"Atkinson Hyperlegible, system-ui, sans-serif",color:css("--ink-2")},animationDuration:900,
+    grid:{left:56,right:26,top:24,bottom:44,containLabel:false},
+    tooltip:{trigger:"axis",backgroundColor:css("--surface"),borderColor:css("--rule"),textStyle:{color:css("--ink")},
+      axisPointer:{type:"line",lineStyle:{color:css("--ink-3"),type:"dashed"}}}};
+}
+function axisCat(data){return {type:"category",data:data.map(per),boundaryGap:false,axisLine:{lineStyle:{color:css("--rule")}},axisTick:{show:false},axisLabel:{color:css("--ink-2")}};}
+function axisVal(extra){return Object.assign({type:"value",scale:true,splitLine:{lineStyle:{color:css("--rule"),opacity:.7}},axisLabel:{color:css("--ink-2")}},extra||{});}
+
+function mainChart(){
+  const c=chart("mainChart"); if(!c)return;
+  const P=M.periods, series=[{name:t("all"),type:"line",data:D.all,symbolSize:8,lineStyle:{width:3,color:css("--s1")},itemStyle:{color:css("--s1")},
+     endLabel:{show:true,formatter:p=>t("all")+"  "+fmt(p.value,1),color:css("--ink"),fontWeight:700},
+     markLine:{silent:true,symbol:"none",lineStyle:{color:css("--ink-3"),type:"dotted"},data:[{yAxis:100}],label:{show:false}}}];
+  let leg=`<span><i style="background:${css("--s1")}"></i>${t("all")}</span>`;
+  if(SELECTED&&D.divisions[SELECTED]){
+    series.push({name:SELECTED+" "+dlab(SELECTED),type:"line",data:D.divisions[SELECTED],symbolSize:8,lineStyle:{width:2,color:css("--s2")},itemStyle:{color:css("--s2")},
+      endLabel:{show:true,formatter:p=>SELECTED+"  "+fmt(p.value,1),color:css("--ink")}});
+    leg+=`<span><i style="background:${css("--s2")}"></i>${esc(SELECTED+" "+dlab(SELECTED))}</span>`;
+  }
+  document.getElementById("mainLegend").innerHTML=leg;
+  c.setOption(Object.assign(base(),{grid:{left:56,right:140,top:24,bottom:44},xAxis:axisCat(P),yAxis:axisVal(),series,
+    tooltip:Object.assign(base().tooltip,{valueFormatter:v=>fmt(v,2)})}));
+}
+
+let PERIOD=null;
+function contrib(){
+  const periods=[...new Set(D.contributions.map(c=>c.period))];
+  if(!periods.length){document.getElementById("contribChart").innerHTML="";document.getElementById("periodSeg").innerHTML="";return;}
+  PERIOD=PERIOD&&periods.includes(PERIOD)?PERIOD:periods[periods.length-1];
+  document.getElementById("periodSeg").innerHTML=periods.map(p=>`<button aria-pressed="${p===PERIOD}" data-p="${p}">${per(p)}</button>`).join("");
+  document.querySelectorAll("#periodSeg button").forEach(b=>b.onclick=()=>{PERIOD=b.dataset.p;contrib();});
+  const rows=D.contributions.filter(c=>c.period===PERIOD).sort((a,b)=>a.pp-b.pp);
+  const c=chart("contribChart"); if(!c)return;
+  c.setOption(Object.assign(base(),{grid:{left:200,right:60,top:10,bottom:30},
+    tooltip:{trigger:"item",backgroundColor:css("--surface"),borderColor:css("--rule"),textStyle:{color:css("--ink")},
+      formatter:p=>`<b>${esc(p.name)}</b><br>${sgn(p.value,3)} ${LANG==="fr"?"pt":"pp"}`},
+    xAxis:{type:"value",splitLine:{lineStyle:{color:css("--rule")}},axisLabel:{color:css("--ink-2"),formatter:v=>sgn(v,2)}},
+    yAxis:{type:"category",data:rows.map(r=>r.division+" "+dlab(r.division).slice(0,26)),axisTick:{show:false},axisLine:{show:false},axisLabel:{color:css("--ink")}},
+    series:[{type:"bar",barWidth:"58%",data:rows.map(r=>({value:r.pp,itemStyle:{color:r.pp>0?css("--up"):r.pp<0?css("--down"):css("--flat"),borderRadius:r.pp>=0?[0,4,4,0]:[4,0,0,4]}})),
+      label:{show:true,position:"right",formatter:p=>sgn(p.value,2),color:css("--ink-2"),fontSize:12}}]}));
+}
+function hist(){
+  const R=D.relatives; const c=chart("histChart"); if(!c||!R||!R.bins)return;
+  c.setOption(Object.assign(base(),{grid:{left:50,right:14,top:14,bottom:38},
+    tooltip:{trigger:"axis",backgroundColor:css("--surface"),borderColor:css("--rule"),textStyle:{color:css("--ink")},
+      formatter:p=>`${sgn(p[0].name*1,1)} %: <b>${p[0].value}</b>`},
+    xAxis:{type:"category",data:R.bins,axisLabel:{color:css("--ink-2"),formatter:v=>sgn(v*1,0)+"%",interval:7},axisTick:{show:false},axisLine:{lineStyle:{color:css("--rule")}}},
+    yAxis:{type:"log",min:1,splitLine:{lineStyle:{color:css("--rule")}},axisLabel:{color:css("--ink-2")}},
+    series:[{type:"bar",barCategoryGap:"8%",data:R.counts.map((n,i)=>({value:Math.max(n,0.9),itemStyle:{color:R.bins[i]<-0.5?css("--down"):R.bins[i]>0.5?css("--up"):css("--flat"),borderRadius:[3,3,0,0]}}))}]}));
+  const pc=x=>fmt(100*x,1);
+  let note=t("shapeNote")(R.n,pc(R.down),pc(R.up),pc(R.same),per(R.from),per(R.to));
+  if(R.same>0.6&&R.down>3*R.up&&R.down>0.05) note+=" "+t("promoHint");
+  document.getElementById("shapeNote").textContent=note;
+}
+function tree(){
+  const c=chart("treeChart"); if(!c)return;
+  const eq=M.weights_status!=="given";
+  const data=D.basket.map(b=>({name:b.division+" "+(LANG==="fr"?b.label_fr:b.label_en),value:eq?1:(b.weight||0.01),covered:b.covered,items:b.items,w:b.weight,
+    itemStyle:{color:b.covered?css("--s1"):css("--surface-2"),borderColor:css("--surface"),borderWidth:2,decal:b.covered?null:{symbol:"rect",dashArrayX:[1,0],dashArrayY:[2,6],rotation:-Math.PI/4,color:css("--rule")}},
+    label:{color:b.covered?"#fff":css("--ink-2")}}));
+  c.setOption({tooltip:{backgroundColor:css("--surface"),borderColor:css("--rule"),textStyle:{color:css("--ink")},
+     formatter:p=>`<b>${esc(p.name)}</b><br>${t("weight")}: ${p.data.w!=null?fmt(p.data.w,1)+" %":"—"}<br>${p.data.covered?t("covered")+" · "+p.data.items.toLocaleString()+" "+t("items"):t("notcovered")}`},
+    series:[{type:"treemap",roam:false,nodeClick:false,breadcrumb:{show:false},width:"100%",height:"100%",top:0,left:0,
+      label:{show:true,formatter:p=>p.name.split(" ").slice(0,4).join(" ")+(p.data.w!=null&&!eq?"\n"+fmt(p.data.w,1)+" %":""),fontSize:13,fontFamily:"Atkinson Hyperlegible, system-ui, sans-serif",overflow:"break"},
+      itemStyle:{gapWidth:2,borderRadius:6},data}],aria:{enabled:true,decal:{show:false}}});
+  const cov=D.basket.filter(b=>b.covered).length;
+  const share=M.basket_share!=null&&!eq?fmt(100*M.basket_share,1):null;
+  document.getElementById("basketLead").textContent=t("basketLead")(cov,share)+(eq?" "+t("basketEqual"):"");
+}
+function map(){
+  const c=chart("mapChart"); if(!c||!D.geo)return;
+  echarts.registerMap("country",D.geo);
+  const cities=(M.cities||[]).map(x=>({name:x.name,value:[x.lon,x.lat]}));
+  c.setOption({tooltip:{trigger:"item",backgroundColor:css("--surface"),borderColor:css("--rule"),textStyle:{color:css("--ink")},formatter:p=>esc(p.name)},
+    geo:{map:"country",roam:false,itemStyle:{areaColor:css("--surface-2"),borderColor:css("--ink-3"),borderWidth:1},emphasis:{disabled:true},
+      layoutCenter:["50%","50%"],layoutSize:"92%"},
+    series:[{type:"scatter",coordinateSystem:"geo",data:cities,symbolSize:9,itemStyle:{color:css("--s1"),borderColor:css("--surface"),borderWidth:2},
+        label:{show:true,formatter:"{b}",position:"right",color:css("--ink"),fontSize:12}},
+      {type:"effectScatter",coordinateSystem:"geo",data:[{name:M.capital.name,value:[M.capital.lon,M.capital.lat]}],symbolSize:12,
+        rippleEffect:{brushType:"stroke",scale:4,period:3},itemStyle:{color:"#E2A92B"}}]});
+  document.getElementById("mapNote").textContent=t("map_note")(Object.keys(D.regions||{}).length);
+}
+function methods(){
+  const c=chart("methChart"); if(!c)return;
+  const m=D.methods, keys=Object.keys(m).filter(k=>k!=="periods");
+  const cols={jevons:css("--s1"),dutot:css("--s2"),carli:css("--s4"),geks_jevons:css("--s3"),geks_tornqvist_proxy:css("--ink-3"),regular_prices:css("--s2"),ci_low:css("--ink-3"),ci_high:css("--ink-3")};
+  const dash={dutot:"dashed",carli:"dotted",geks_jevons:"solid",regular_prices:"dotted",ci_low:"dashed",ci_high:"dashed"};
+  document.getElementById("methLegend").innerHTML=keys.map(k=>`<span><i style="background:${cols[k]}"></i>${t("formulas")[k]||k}</span>`).join("");
+  c.setOption(Object.assign(base(),{grid:{left:56,right:120,top:20,bottom:44},xAxis:axisCat(m.periods),yAxis:axisVal(),
+    tooltip:Object.assign(base().tooltip,{valueFormatter:v=>fmt(v,2)}),
+    series:keys.map(k=>({name:t("formulas")[k]||k,type:"line",data:m[k],symbolSize:8,lineStyle:{width:k==="jevons"?3:2,type:dash[k]||"solid",color:cols[k]},itemStyle:{color:cols[k]},
+      endLabel:{show:true,formatter:p=>(t("formulas")[k]||k)+" "+fmt(p.value,1),color:css("--ink-2"),fontSize:12}}))}));
+}
+function official(){
+  const o=D.official||{}; const box=document.getElementById("official");
+  let h="";
+  if(o.latest&&Object.keys(o.latest).length){
+    const L=o.latest;
+    h+=`<p><b>${t("latestOff")}</b> — ${esc(o.publisher||"")}: ${L.period?per(L.period)+", ":""}${L.yoy_pct!=null?(LANG==="fr"?"glissement annuel ":"year on year ")+sgn(L.yoy_pct,1)+" %":""}${L.mom_pct!=null?", "+(LANG==="fr"?"sur un mois ":"month on month ")+sgn(L.mom_pct,1)+" %":""}${L.index!=null?(LANG==="fr"?", indice ":", index ")+fmt(L.index,1):""}.</p>`;
+  }
+  if(o.monthly){
+    h+=`<div class="panel"><div class="chart sm" id="offChart" role="img"></div></div><p class="small muted">${t("offLab")}</p>`;
+  }
+  if(o.imf_series){
+    h+=`<div class="panel"><div class="chart sm" id="imfChart" role="img"></div></div><p class="small muted">${t("imfLab")}</p>`;
+  }
+  if(o.url) h+=`<p class="small"><a href="${esc(o.url)}" target="_blank" rel="noopener">${esc(o.publisher||o.url)}</a></p>`;
+  box.innerHTML=h;
+  if(o.monthly){
+    const c=chart("offChart");
+    c&&c.setOption(Object.assign(base(),{grid:{left:44,right:48,top:16,bottom:30},xAxis:axisCat(o.monthly.periods),yAxis:axisVal(),
+      tooltip:Object.assign(base().tooltip,{valueFormatter:v=>fmt(v,1)}),
+      series:[{type:"line",data:o.monthly.cpi,symbolSize:6,lineStyle:{width:2.5,color:css("--s3")},itemStyle:{color:css("--s3")},
+        endLabel:{show:true,formatter:p=>fmt(p.value,1),color:css("--ink")}}]}));
+  }
+  if(o.imf_series){
+    const ys=Object.keys(o.imf_series).filter(y=>+y>=2015&&+y<=new Date().getFullYear()+1);
+    const now=new Date().getFullYear();
+    const c=chart("imfChart");
+    c&&c.setOption(Object.assign(base(),{grid:{left:44,right:10,top:16,bottom:30},xAxis:{type:"category",data:ys,axisTick:{show:false},axisLabel:{color:css("--ink-2")},axisLine:{lineStyle:{color:css("--rule")}}},
+      yAxis:axisVal({scale:false}),tooltip:{trigger:"axis",backgroundColor:css("--surface"),borderColor:css("--rule"),textStyle:{color:css("--ink")},valueFormatter:v=>fmt(v,1)+" %"},
+      series:[{type:"bar",barWidth:"55%",data:ys.map(y=>({value:o.imf_series[y],itemStyle:{color:+y>=now?css("--surface-2"):css("--s3"),borderColor:css("--s3"),borderWidth:+y>=now?1.5:0,borderType:"dashed",borderRadius:[4,4,0,0]}}))}]}));
+  }
+}
+
+/* ---------------- explorer ---------------- */
+let SORT={k:"change",dir:-1};
+function explorer(){
+  const sel=document.getElementById("fdiv"), q=document.getElementById("q");
+  q.placeholder=t("search");
+  const divs=[...new Set(D.products.map(p=>p.division))].sort();
+  const cur=sel.value;
+  sel.innerHTML=`<option value="">${t("alldiv")}</option>`+divs.map(d=>`<option value="${d}">${d} ${esc(dlab(d))}</option>`).join("");
+  sel.value=cur;
+  const th=t("th"); const keys=["name","division","source","first","last","change"];
+  document.querySelector("#ptable thead").innerHTML="<tr>"+th.map((h,i)=>`<th class="${i>2?"r":""}" data-k="${keys[i]}" scope="col" tabindex="0">${h}${SORT.k===keys[i]?(SORT.dir>0?" ▲":" ▼"):""}</th>`).join("")+"</tr>";
+  document.querySelectorAll("#ptable th").forEach(h=>{const go=()=>{SORT={k:h.dataset.k,dir:SORT.k===h.dataset.k?-SORT.dir:-1};explorer();};h.onclick=go;h.onkeydown=e=>{if(e.key==="Enter")go();};});
+  const term=q.value.trim().toLowerCase();
+  let rows=D.products.filter(p=>(!sel.value||p.division===sel.value)&&(!term||p.name.toLowerCase().includes(term)));
+  const val=(p,k)=>k==="first"?p.prices.find(x=>x!=null):k==="last"?p.prices[p.prices.length-1]:p[k];
+  rows.sort((a,b)=>{const x=val(a,SORT.k),y=val(b,SORT.k);return (x>y?1:x<y?-1:0)*SORT.dir;});
+  const show=rows.slice(0,200);
+  document.querySelector("#ptable tbody").innerHTML=show.map(p=>{const f=val(p,"first"),l=val(p,"last");
+    return `<tr><td>${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.name)}</a>`:esc(p.name)}${p.promo?` <span class="pill warn">${LANG==="fr"?"promo":"on sale"}</span>`:""}</td><td>${p.division}</td><td class="small muted">${esc(p.source)}</td>
+      <td class="r num">${fmt(f,f<100?2:0)}</td><td class="r num">${fmt(l,l<100?2:0)}</td><td class="r num"><span class="d ${p.change>0?"up":p.change<0?"down":""}">${sgn(p.change,1)} %</span></td></tr>`;}).join("");
+  document.getElementById("expCount").textContent=t("shown")(show.length,rows.length);
+}
+document.getElementById("q").addEventListener("input",explorer);
+document.getElementById("fdiv").addEventListener("change",explorer);
+
+/* ---------------- method & sources ---------------- */
+function steps(){document.getElementById("steps").innerHTML=t("steps").map(s=>`<div><h3>${s[0]}</h3><p class="muted small">${s[1]}</p></div>`).join("");}
+function sources(){
+  const st=t("status"),run=t("run"),kinds=t("kinds");
+  const icon={verified:"✓",partial:"◐",unverified:"?",excluded:"✕"},cls={verified:"good",partial:"warn",unverified:"warn",excluded:"bad"};
+  const list=[...D.sources].sort((a,b)=>(a.excluded-b.excluded)||(b.observations-a.observations));
+  document.getElementById("srcs").innerHTML=list.map(s=>`<article class="src ${s.excluded?"ex":""}">
+    <div class="k">${esc(kinds[s.kind]||s.kind)}${s.divisions.length?" — COICOP "+s.divisions.join(", "):""}</div>
+    <h3><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></h3>
+    <span class="pill ${cls[s.status]}">${icon[s.status]} ${st[s.status]}</span>
+    ${s.run_status?` <span class="pill">${esc(run[s.run_status]||s.run_status)}</span>`:""}
+    ${s.observations?` <span class="pill">${t("obsN")(s.observations)}</span>`:""}
+    <p>${esc(LANG==="fr"?s.note_fr:s.note_en)}</p></article>`).join("");
+}
+function staticText(){
+  document.querySelectorAll("[data-i]").forEach(el=>{const v=t(el.dataset.i);if(typeof v==="string")el.textContent=v;});
+  document.getElementById("footNote").textContent=t("footNote")+" cpi-di4a "+M.version+" — "+M.generated;
+}
+function renderCharts(){mainChart();contrib();hist();tree();map();methods();official();multiples();}
+function renderAll(){staticText();hero();ticker();steps();explorer();sources();renderCharts();setPhoto();}
+renderAll();
+if(!IMAGES.length) fetchImages(); else setPhoto();
+addEventListener("resize",()=>Object.values(charts).forEach(c=>c&&c.resize()));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",renderCharts);
+})();
+</script>
+</body>
+</html>
